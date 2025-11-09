@@ -35,3 +35,72 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Claude
+./claude*
+
+# Lock files
+.terraform.lock.hcl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Example tfvars are allowed
+!*.tfvars.example
+
+# Test results
+*.test
+test-results/
+
+# Secrets
+*.pem
+*.key
+secrets.yaml
+secrets.json
+
+# Videos and screenshots for submission
+videos/
+screenshots/
+*.mp4
+*.mov
+
+# Build artifacts
+dist/
+build/# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Variable files (may contain sensitive data)
+*.tfvars
+*.tfvars.json
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Terraform directory
+.terraform/
+.terraform.lock.hcl
+
+# Plan files
+*.tfplan
+
+# Local environment files
+.env
+.env.local
