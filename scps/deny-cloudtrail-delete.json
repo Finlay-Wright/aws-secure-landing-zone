@@ -1,0 +1,34 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyCloudTrailDelete",
+      "Effect": "Deny",
+      "Action": [
+        "cloudtrail:DeleteTrail",
+        "cloudtrail:StopLogging",
+        "cloudtrail:UpdateTrail"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotLike": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::*:role/BreakGlassRole",
+            "arn:aws:iam::*:role/SecurityAdminRole"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "DenyCloudTrailLogValidationDisable",
+      "Effect": "Deny",
+      "Action": "cloudtrail:UpdateTrail",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "cloudtrail:EnableLogFileValidation": "false"
+        }
+      }
+    }
+  ]
+}

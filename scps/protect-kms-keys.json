@@ -1,0 +1,42 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ProtectLogKMSKeys",
+      "Effect": "Deny",
+      "Action": [
+        "kms:DisableKey",
+        "kms:ScheduleKeyDeletion",
+        "kms:DeleteAlias",
+        "kms:PutKeyPolicy"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:ResourceTag/Purpose": [
+            "*log*",
+            "*cloudtrail*",
+            "*flow-log*"
+          ]
+        },
+        "StringNotLike": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::*:role/SecurityAdminRole",
+            "arn:aws:iam::*:role/BreakGlassRole"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "DenyKMSKeyDeletionShortWindow",
+      "Effect": "Deny",
+      "Action": "kms:ScheduleKeyDeletion",
+      "Resource": "*",
+      "Condition": {
+        "NumericLessThan": {
+          "kms:ScheduleKeyDeletionPendingWindowInDays": "30"
+        }
+      }
+    }
+  ]
+}
