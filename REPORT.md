@@ -134,12 +134,12 @@ I've made a couple of key assumptions that impact how these modules all glue tog
 ## Trade-offs and Limitations
 
 ### What's Included
-✅ All four core deliverables fully implemented
-✅ Working Terraform code
-✅ Cross-account logging and KMS access
-✅ Cost-optimized defaults
-✅ Clear documentation
-✅ **Two stretch goals completed:**
+- ✅ All four core deliverables fully implemented
+- ✅ Working Terraform code
+- ✅ Cross-account logging and KMS access
+- ✅ Cost-optimized defaults
+- ✅ Clear documentation
+- ✅ **Two stretch goals completed:**
   - Cross-account logging and KMS key access diagrams
   - Automated tag remediation Lambda  
 
