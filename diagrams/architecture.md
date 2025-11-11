@@ -12,10 +12,10 @@ graph TB
         end
         
         subgraph "KMS Encryption"
-            KMS_EBS[KMS Key: EBS<br/>$4/month]
-            KMS_CW[KMS Key: CloudWatch<br/>$4/month]
-            KMS_VPC[KMS Key: VPC Flow<br/>$4/month]
-            KMS_DATA[KMS Key: Data<br/>$4/month]
+            KMS_EBS[KMS Key: EBS<br/>$1/month]
+            KMS_CW[KMS Key: CloudWatch<br/>$1/month]
+            KMS_VPC[KMS Key: VPC Flow<br/>$1/month]
+            KMS_DATA[KMS Key: Data<br/>$1/month]
         end
         
         subgraph "Local Storage"

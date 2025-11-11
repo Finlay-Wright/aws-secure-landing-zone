@@ -4,7 +4,7 @@
 
 ## Overview
 
-AWS Config rules to check for required tags. Non-compliant resources show up in the Config dashboard. This is detective control - resources can still be created without tags, but you'll know about it.
+AWS Config rules to check for required tags. Non-compliant resources show up in the Config dashboard. This is detective control - resources can still be created without tags, but you'll hear about it.
 
 **Default tags:**
 - `Environment` - dev/staging/prod
@@ -14,7 +14,7 @@ AWS Config rules to check for required tags. Non-compliant resources show up in 
 
 **Why:** Cost allocation, accountability, automation, compliance. Without enforcement tags drift over time and become useless.
 
-**Note:** For time constraints, this uses basic Config rules. Tag Policies (AWS Orgs) or EventBridge + Lambda would provide preventive enforcement.
+**Optional auto-remediation:** A fairly heavily vibe coded Lambda function included to automatically tag non-compliant resources. Can be enabled via `enable_auto_remediation = true`.
 
 ## Usage
 
@@ -64,33 +64,16 @@ module "tagging_enforcement" {
 
 ## Automated Remediation
 
-**New:** This module now includes optional automated tag remediation via Lambda.
+This module now includes optional automated tag remediation via Lambda.
 
-When enabled, a Lambda function automatically applies default tags to non-compliant resources when Config detects violations. This reduces manual toil and improves compliance rates.
-
-**Enable auto-remediation:**
-
-```hcl
-module "tagging_enforcement" {
-  source = "./modules/tagging-enforcement"
-
-  account_name = "my-prod-account"
-  environment  = "prod"
-
-  # Enable automated remediation
-  enable_auto_remediation = true
-
-  # Optional: SNS topic for notifications when auto-tagging fails
-  remediation_sns_topic_arn = "arn:aws:sns:eu-west-2:123456789012:tag-remediation-alerts"
-}
-```
+When enabled, a Lambda function automatically applies default tags to non-compliant resources when Config detects violations.
 
 **How it works:**
-1. Config detects a resource without required tags → marks it NON_COMPLIANT
+1. Config detects a resource without required tags and marks it NON_COMPLIANT
 2. EventBridge triggers Lambda on compliance change
 3. Lambda retrieves default tags from SSM Parameter Store
 4. Lambda applies tags using Resource Groups Tagging API
-5. If resource type doesn't support auto-tagging → sends SNS notification
+5. If resource type doesn't support auto-tagging then it sends SNS notification
 
 **What gets auto-tagged:**
 EC2 instances/volumes, S3 buckets, RDS databases, Lambda functions, DynamoDB tables, ECS/EKS clusters, EFS file systems. See `lambda/auto_tag_remediation.py` for full list.
@@ -103,16 +86,6 @@ EC2 instances/volumes, S3 buckets, RDS databases, Lambda functions, DynamoDB tab
 **Doesn't overwrite:** Existing tags are preserved - only missing tags are added.
 
 **Manual remediation (if auto-remediation is disabled):**
-
-```bash
-# EC2
-aws ec2 create-tags --resources i-1234567890abcdef0 \
-  --tags Key=Environment,Value=prod Key=Owner,Value=alice@company.com
-
-# S3
-aws s3api put-bucket-tagging --bucket my-bucket \
-  --tagging 'TagSet=[{Key=Environment,Value=prod}]'
-```
 
 ## Variables
 

@@ -1,10 +1,6 @@
 # Auto-tagging remediation Lambda and supporting infrastructure
 # This is triggered by Config compliance changes to automatically tag non-compliant resources
 
-# Data source for current region and account
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
 # Package Lambda function
 data "archive_file" "remediation_lambda" {
   count       = var.enable_auto_remediation ? 1 : 0
@@ -177,12 +173,7 @@ resource "aws_ssm_parameter" "default_tags" {
   count = var.enable_auto_remediation && var.create_default_tags_parameter ? 1 : 0
   name  = "/baseline/default-tags"
   type  = "String"
-  value = jsonencode({
-    Environment        = var.environment
-    Owner              = "platform-team"
-    CostCenter         = "engineering"
-    DataClassification = "internal"
-  })
+  value = jsonencode(var.required_tags)
 
   description = "Default tags applied by auto-remediation Lambda"
 

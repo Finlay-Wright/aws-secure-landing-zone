@@ -1,10 +1,10 @@
 # Service Control Policies (SCPs)
 
-**Deliverable D** - Organization-level preventive controls.
+**Deliverable D** - Org-level preventive controls.
 
 ## Overview
 
-SCPs deny actions at the AWS Organizations level before they execute, regardless of IAM policies. Even account admins can't bypass them.
+SCPs deny actions at the AWS Organisations level before they execute, regardless of IAM policies. Even account admins can't bypass them.
 
 **Why:** IAM policies can be changed by admins. SCPs stop risky actions at the API level - can't disable CloudTrail to hide tracks, can't make S3 buckets public, can't create unencrypted storage.
 
@@ -26,7 +26,7 @@ Blocks:
 - Bucket policies without SSL/TLS
 - Disabling S3 Block Public Access
 
-Public S3 buckets = #1 cause of data breaches.
+Who doesn't love an accidentally public S3 bucket...
 
 ### require-encryption.json
 
@@ -37,7 +37,7 @@ Blocks creating unencrypted:
 - DynamoDB tables
 - EFS file systems
 
-Must encrypt at creation for some services (RDS), so preventive control is critical.
+You must enable encrypt at creation for some services (RDS), so having a preventive control is critical.
 
 ### restrict-regions.json
 
@@ -45,7 +45,7 @@ Only allows resources in EU (London) region (eu-west-2).
 
 Exceptions for global services (IAM, CloudFront, Route53).
 
-**Why eu-west-2:** UK data residency requirements for AISI (UK government agency).
+**Why eu-west-2:** I'm assuming some UK data residency requirements for AISI.
 
 ### protect-kms-keys.json
 
@@ -54,11 +54,11 @@ Blocks:
 - Scheduling key deletion with < 30 days
 - Modifying key policies on log keys
 
-Prevents denial of service on logging and key deletion to cover tracks.
+Prevents attackers from deleting encryption keys or logs to hide evidence of compromise.
 
 ## Usage
 
-Apply at the Organization or OU level (not managed by this Terraform code):
+Apply at the org or OU level (not managed by this Terraform code):
 
 ```bash
 # Create policy
@@ -73,7 +73,7 @@ aws organizations attach-policy \
   --target-id ou-xxxx-xxxxxxxx
 ```
 
-**Test in dev first.** Apply to dev OU before production.
+**Test in dev first.** Apply to a dev OU before production.
 
 ## Rollout Order
 
@@ -84,24 +84,8 @@ Least to most disruptive:
 4. deny-public-s3 (medium risk)
 5. require-encryption (high risk - may break existing stuff)
 
-## Customization Needed
+## Customisation Needed
 
 - Update exception role ARNs in deny-cloudtrail-delete.json and protect-kms-keys.json
-- Change allowed regions in restrict-regions.json
+- Change allowed regions in restrict-regions.json if necessary
 - Review resource types in require-encryption.json
-
-## Testing
-
-Try the blocked action after applying. Should get AccessDenied even with IAM policy allowing it.
-
-## Exception Handling
-
-Add exception roles to policies or temporarily detach for emergencies. Track exceptions.
-
-## Notes
-
-- Free (no cost for SCPs)
-- Only work with AWS Organizations
-- Can only deny, not grant permissions
-- Some services don't fully support SCP conditions
-

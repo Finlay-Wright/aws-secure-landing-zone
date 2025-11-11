@@ -1,33 +1,22 @@
 # AWS Secure Landing Zone
 
-Terraform modules for securing AWS accounts with centralized logging, encryption, and compliance controls. Built for AISI's multi-account environment with UK data residency.
+A collection of Terraform modules that provide a sensible security baseline for new AWS accounts. This covers the essentials: centralized logging, encryption at rest, and preventive guardrails - all designed for a multi-account setup with UK data residency (eu-west-2).
 
 ## What's Included
 
-**Deliverable A: Centralized Logging**
-- CloudTrail (multi-region, log validation, encrypted)
-- GuardDuty threat detection
-- VPC Flow Logs to CloudWatch
+This baseline implements four core security controls:
 
-**Deliverable B: KMS Encryption**
-- 4 dedicated KMS keys (EBS, CloudWatch Logs, VPC Flow Logs, Data)
-- EBS encryption enabled by default
-- Automatic key rotation
+**A. Centralized Logging** - CloudTrail for API auditing, GuardDuty for threat detection, and VPC Flow Logs for network visibility. Everything's encrypted and sent to a central S3 bucket.
 
-**Deliverable C: Tagging Enforcement**
-- AWS Config rules for required tags
-- Compliance dashboard
+**B. Encryption at Rest** - Four customer-managed KMS keys (one each for EBS, CloudWatch Logs, VPC Flow Logs, and general data). EBS encryption is enabled by default across the account, so you can't accidentally create unencrypted volumes.
 
-**Deliverable D: Service Control Policies**
-- Prevent CloudTrail deletion
-- Block public S3 buckets
-- Require encryption
-- Restrict to eu-west-2 (London)
-- Protect KMS keys
+**C. Tagging Enforcement** - AWS Config rules that check for required tags on resources. Not as strict as Tag Policies (which block creation), but gives you visibility into what's compliant.
+
+**D. Service Control Policies** - Five preventive guardrails that stop bad things from happening: no deleting CloudTrail, no public S3 buckets, encryption required, resources locked to London (eu-west-2), and KMS key protection.
 
 ## Quick Start
 
-**Demo deployment (single account):**
+**Want to test it out?** There's a demo deployment that applies everything to a single account:
 
 ```bash
 cd demo
@@ -36,39 +25,31 @@ terraform plan
 terraform apply
 ```
 
-Deploys all security controls to one AWS account for testing. See [demo/README.md](demo/README.md) for details.
+This creates all the security controls in your AWS account. It's self-contained and easy to tear down. See [demo/README.md](demo/README.md) for the full walkthrough.
 
-**Production deployment (multi-account):**
-
-Deploy modules individually to each account:
+**For production use**, you'll want to deploy the baseline to each account in your organization:
 
 ```hcl
-module "kms_encryption" {
-  source             = "./modules/kms-encryption"
-  account_name       = "my-account"
-  environment        = "prod"
-  logging_account_id = "123456789012"
-}
+module "account_baseline" {
+  source = "./modules/account-baseline"
 
-module "centralized_logging" {
-  source                      = "./modules/centralized-logging"
-  account_name                = "my-account"
-  environment                 = "prod"
-  logging_account_id          = "123456789012"
-  central_logging_bucket_arn  = "arn:aws:s3:::central-logs"
-  cloudwatch_logs_kms_key_arn = module.kms_encryption.cloudwatch_logs_key_arn
-  flow_logs_kms_key_arn       = module.kms_encryption.flow_logs_key_arn
-}
+  account_name               = "my-account"
+  environment                = "prod"
+  logging_account_id         = "123456789012"
+  central_logging_bucket_arn = "arn:aws:s3:::central-logs"
 
-module "tagging_enforcement" {
-  source            = "./modules/tagging-enforcement"
-  account_name      = "my-account"
-  environment       = "prod"
-  required_tag_keys = ["Project", "Team", "CostCenter"]
+  # Required tags for this account
+  required_tags = {
+    Environment = "prod"
+    Team        = "platform"
+    CostCenter  = "engineering"
+  }
 }
 ```
 
-Then apply SCPs at AWS Organization level (see `/scps/`).
+You can also deploy modules individually if you need more granular control - each module has its own README with examples.
+
+The SCPs need to be applied at the AWS Organization level, not per-account. See `/scps/` for the policies and how to apply them.
 
 ## Repository Structure
 
@@ -76,6 +57,7 @@ Then apply SCPs at AWS Organization level (see `/scps/`).
 .
 ├── demo/                       # Single-account demo deployment
 ├── modules/
+│   ├── account-baseline/       # Wrapper: all modules combined
 │   ├── centralized-logging/   # CloudTrail, GuardDuty, VPC Flow Logs
 │   ├── kms-encryption/         # 4 KMS keys + EBS encryption
 │   └── tagging-enforcement/    # AWS Config rules
@@ -87,29 +69,26 @@ Then apply SCPs at AWS Organization level (see `/scps/`).
 
 ## Architecture
 
-Cross-account logging with KMS encryption and SCPs. Full diagrams in `/diagrams/architecture.md`.
+The full setup uses cross-account logging (everything goes to a central S3 bucket), KMS encryption for data at rest, and SCPs as preventive controls. I've put together some diagrams showing how it all fits together in `/diagrams/architecture.md`.
 
 ## Cost
 
-Per-account: **$44-146/month**
-- CloudTrail: $5-10
-- GuardDuty: $5-50
-- VPC Flow Logs: $10-50
-- KMS (4 keys): $16
-- Config: $8-10
+Expect around **$32-124 per account per month**, depending on how much activity you've got:
+- CloudTrail: $5-10 (pretty consistent)
+- GuardDuty: $5-50 (scales with API volume)
+- VPC Flow Logs: $10-50 (scales with traffic)
+- KMS (4 keys): $4 (fixed cost)
+- Config: $8-10 (scales with resources tracked)
 
 ## Documentation
 
-- **[demo/README.md](demo/README.md)** - Single-account deployment
-- **[REPORT.md](REPORT.md)** - Technical summary
-- **`/modules/*/README.md`** - Module documentation
-- **`/scps/README.md`** - SCP guide
-- **`/diagrams/architecture.md`** - Architecture diagrams
+Each component has its own README with usage examples and details:
 
-## TODO
-
-- [ ] Deploy demo and take screenshots
-- [ ] Convert REPORT.md to PDF
+- **[demo/README.md](demo/README.md)** - How to deploy the demo
+- **[REPORT.md](REPORT.md)** - Technical writeup covering design decisions and trade-offs
+- **`/modules/*/README.md`** - Detailed docs for each module
+- **`/scps/README.md`** - Guide to the Service Control Policies
+- **`/diagrams/architecture.md`** - Architecture diagrams and data flows
 
 ---
 

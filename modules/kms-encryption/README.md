@@ -12,7 +12,7 @@ Creates 4 customer-managed KMS keys and enables account-wide EBS encryption. All
 - `flowlogs` - VPC Flow Logs encryption  
 - `data` - General purpose (S3, RDS, DynamoDB, etc.)
 
-**Why separate keys:** Limits blast radius if compromised, simpler key policies, easier permission management. Trade-off is cost ($4/key = $16/month vs $4 for one key).
+**Why separate keys:** Limits blast radius if compromised, simpler key policies, easier permission management. Trade-off is cost ($1/key = $4/month vs $1 for one key).
 
 **Why customer-managed:** Control over key policies, CloudTrail audit trail, ability to disable/delete, required for most compliance frameworks.
 
@@ -39,7 +39,7 @@ module "kms_encryption" {
 - EBS encryption enabled account-wide
 - Default EBS KMS key set
 
-**Cost:** $16/month ($4 per key). API calls are free for first 20k/month.
+**Cost:** $4/month ($1 per key). API calls are free for first 20k/month.
 
 ## EBS Encryption By Default
 

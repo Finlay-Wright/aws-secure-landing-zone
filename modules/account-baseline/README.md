@@ -33,20 +33,19 @@ module "account_baseline" {
   environment  = "prod"
 
   # Where logs go
-  central_logging_bucket_arn = "arn:aws:s3:::my-org-logging"
+  central_logging_bucket_arn = "arn:aws:s3:::my-org-logging-bucket"
   security_account_id        = "123456789012"
   logging_account_id         = "234567890123"
 
   # Regions
-  primary_region  = "us-east-1"
-  enabled_regions = ["us-east-1", "us-west-2"]
+  primary_region  = "eu-west-2"
+  enabled_regions = ["eu-west-2", "eu-west-1"]
 
   # Required tags
   required_tags = {
     Environment        = "prod"
-    Owner              = "platform-team@example.com"
-    CostCenter         = "engineering"
-    DataClassification = "confidential"
+    Owner              = "platform@aisi.gov.uk"
+    DataClassification = "super-secret"
   }
 }
 ```
@@ -56,21 +55,21 @@ module "account_baseline" {
 ### From kms-encryption module:
 - 4 KMS keys (EBS, CloudWatch Logs, Flow Logs, Data)
 - EBS encryption turned on by default
-- **Cost:** $16/month
+- **Cost:** $4/month
 
 ### From centralized-logging module:
 - Multi-region CloudTrail
 - GuardDuty threat detection
 - VPC Flow Logs for default VPC
 - CloudWatch Logs (encrypted)
-- **Cost:** ~$30-100/month depending on volume
+- **Cost:** ~$20-100/month depending on volume
 
 ### From tagging-enforcement module:
 - AWS Config rules for 4 required tags
 - Compliance dashboard
 - **Cost:** ~$8-10/month
 
-**Total:** ~$54-126/month for a typical production account
+**Total:** ~$32-114/month for a typical production account
 
 ## Module Flow
 
@@ -84,9 +83,9 @@ tagging-enforcement (no dependencies)
 
 The wrapper handles passing KMS key outputs to the logging module, so you don't have to wire them up manually.
 
-## Customization
+## Customisation
 
-All the variables from the sub-modules are exposed, so you can customize:
+All the variables from the sub-modules are exposed, so you can customise:
 
 ```hcl
 module "account_baseline" {
@@ -151,22 +150,11 @@ This wrapper passes through outputs from the sub-modules:
 
 See [outputs.tf](outputs.tf) for the full list.
 
-## Common Issues
-
-**Dependency errors:**
-If you get errors about modules not found, check that the relative paths are correct (`../module-name`).
-
-**KMS key errors in logging module:**
-The logging module depends on KMS keys existing first. This wrapper has `depends_on` to handle that, but if you modify things the dependency might break.
-
-**Module already exists:**
-If you're converting from the old monolithic structure, you might need to do `terraform state mv` to migrate resources to the new module structure.
-
 ## What's Not Included
 
 This baseline doesn't include:
-- **SCPs** - Those are deployed at the organization level, not account level (see `/scps` directory)
-- **Network configuration** - You'll still need to create VPCs, subnets, etc.
+- **SCPs** - Those are deployed at the organization level, not account level (see `/scps` directory) for some suggested ones.
+- **Network configuration** - You would still need to create VPCs, subnets, etc.
 - **Application resources** - This is just the security foundation
 
-Think of this as the first thing you deploy in a new account, then you build your actual infrastructure on top of it.
+This is just the first piece you deploy into a new account, then you build your actual infrastructure on top of it.
