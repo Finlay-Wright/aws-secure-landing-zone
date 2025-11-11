@@ -25,7 +25,7 @@ terraform plan
 terraform apply
 ```
 
-This creates all the security controls in your AWS account. It's self-contained and easy to tear down. See [demo/README.md](demo/README.md) for the full walkthrough.
+This creates all the security controls in your AWS account. It's self-contained and easy to tear down. See [demo/README.md](demo/README.md) for more info.
 
 **For production use**, you'll want to deploy the baseline to each account in your organization:
 
@@ -84,7 +84,6 @@ Expect around **$32-124 per account per month**, depending on how much activity 
 
 Each component has its own README with usage examples and details:
 
-- **[demo/README.md](demo/README.md)** - How to deploy the demo
 - **[REPORT.md](REPORT.md)** - Technical writeup covering design decisions and trade-offs
 - **`/modules/*/README.md`** - Detailed docs for each module
 - **`/scps/README.md`** - Guide to the Service Control Policies

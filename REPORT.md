@@ -169,6 +169,8 @@ A Platform/Security team could provision new accounts with this baseline pre-app
 
 ## Cost Summary
 
+**Please note:** these are just fairly rough cost estimations:
+
 | Service | Per-account/month |
 |---------|-------------------|
 | CloudTrail | $5-10 |
